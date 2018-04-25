@@ -1,0 +1,120 @@
+package Phase4;
+
+/*
+ * Copyright (c) 2013, Oracle and/or its affiliates. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   - Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of Oracle or the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+import java.net.*;
+import java.io.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
+import java.util.ArrayList;
+
+public class EchoServerP4 {
+ public static void main(String[] args) throws IOException {
+
+  if (args.length != 1) {
+   System.err.println("Usage: java EchoServer <port number>");
+   System.exit(1);
+  }
+
+  int portNumber = Integer.parseInt(args[0]);
+
+  try (ServerSocket serverSocket = new ServerSocket(Integer.parseInt(args[0]));
+    Socket clientSocket = serverSocket.accept();
+    PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+    BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));) {
+   String inputLine;
+   while ((inputLine = in.readLine()) != null) {
+    BigDecimal test = new BigDecimal(inputLine);
+    ArrayList<BigInteger> bigInts = splitNumber(test);
+
+   }
+  } catch (IOException e) {
+   System.out.println(
+     "Exception caught when trying to listen on port " + portNumber + " or listening for a connection");
+   System.out.println(e.getMessage());
+  }
+ }
+
+ public static ArrayList<BigInteger> splitNumber(BigDecimal number) {
+  MathContext rnd = new MathContext(1);
+  BigDecimal sqRt = sqRoot(number).round(rnd);
+  BigInteger roundedSqRt = sqRt.toBigInteger();
+  final BigInteger THREE = new BigInteger("3");
+  final BigInteger TWO = new BigInteger("2");
+  final BigInteger ONE = new BigInteger("1");
+  BigInteger firstThird = roundedSqRt.divide(THREE);
+  BigInteger secondThird = firstThird.multiply(TWO);
+  BigInteger secondThirdBeginning = firstThird.add(ONE);
+  BigInteger thirdThirdBeginning = secondThird.add(ONE);
+  ArrayList<BigInteger> bigInts = new ArrayList<BigInteger>();
+  bigInts.add(ONE);
+  bigInts.add(firstThird);
+
+  bigInts.add(secondThirdBeginning);
+  bigInts.add(secondThird);
+
+  bigInts.add(thirdThirdBeginning);
+  bigInts.add(roundedSqRt);
+  return bigInts;
+ }
+
+ /**
+  * 
+  * @param num
+  *            is the BigDecimal number for which we are going to find the square
+  *            root
+  * @return the BigDecimal number which is an approximation to the square root of
+  *         num The accuracy of this approximation is determined by the value of
+  *         the delta This method uses an iterative method that is analogous to
+  *         Netwton's method of finding roots.
+  * @author James Kiper. PhD
+  * @date February 22, 2018
+  * 
+  */
+
+ public static BigDecimal sqRoot(BigDecimal num) {
+  BigDecimal approx1;
+  BigDecimal approx2;
+  approx1 = num;
+  approx2 = new BigDecimal("1.0");
+  BigDecimal two = new BigDecimal("2.0");
+  BigDecimal delta = new BigDecimal("0.5");
+  while ((approx1.subtract(approx2)).abs().compareTo(delta) > 0) {
+   approx1 = (approx1.add(approx2).divide(two, 2));
+   approx2 = (num.divide(approx1, 2));
+  }
+  return approx2;
+ }
+}
+
+
